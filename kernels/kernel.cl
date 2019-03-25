@@ -71,6 +71,8 @@ typedef struct s_scene
 {
 	int c_objs;
 	int c_lights;
+	double view_alpha;
+	double view_beta;
 	t_camera camera;
 	t_light lights[10];
 	t_obj objs[10];
@@ -169,6 +171,17 @@ double3 get_pixel_pisition(int x, int y)
 
 	pixel_pos = (double3)(x3, y3, 1.0);
 	return (pixel_pos);
+}
+
+double3	rotate_view(double3 point, double alpha, double beta)
+{
+	// double3 tempo = point;
+
+	// point.x = tempo.x * cos(beta) + tempo.z * sin(alpha);
+	// point.y = tempo.x * sin(alpha) * sin(beta) + tempo.y * cos(alpha) - tempo.z * sin(alpha) * cos(beta);
+	// point.z = tempo.x * sin(alpha) * sin(beta) * tempo.y * sin(alpha) + tempo.z * cos(alpha) * cos(beta);
+
+	// return (point);
 }
 
 double ray_intersect_plane(double3 start, double3 dir, t_cl_obj *plane)
@@ -282,7 +295,7 @@ t_cl_obj *get_closest_object(double *closest_t, double3 start, double3 dir, t_cl
 {
 	double t = 0.0;
 	int i = 0;
-	t_obj *closest_obj = 0;
+	t_cl_obj *closest_obj = 0;
 
 	while (i < cl_scene->c_objs)
 	{
@@ -553,6 +566,7 @@ __kernel void mishania(__global char *image_data, __global t_scene *scene)
 	}
 
 	pixel_pos_3d = get_pixel_pisition(x - CW / 2, -y + CH / 2);
+	//pixel_pos_3d = rotate_view(pixel_pos_3d, scene->view_alpha, scene->view_beta);
 	char flag = 0;
 	if (x == 320 && y == 700)
 		flag = 1;

@@ -6,7 +6,7 @@
 /*   By: cocummin <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/03/20 19:25:19 by cocummin          #+#    #+#             */
-/*   Updated: 2019/03/24 20:33:50 by cocummin         ###   ########.fr       */
+/*   Updated: 2019/03/25 16:32:38 by cocummin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,13 +25,13 @@ t_vector get_pixel_pisition(int x, int y)
 	return (pixel_pos);
 }
 
-t_vector reflect_ray(t_vector R, t_vector N)
-{
-	t_vector ret;
+// t_vector reflect_ray(t_vector R, t_vector N)
+// {
+// 	t_vector ret;
 
-	ret = vector_subt(vector_int_mult(N, 2 * scal_mult(N, R)), R);
-	return (ret);
-}
+// 	ret = vector_subt(vector_int_mult(N, 2 * scal_mult(N, R)), R);
+// 	return (ret);
+// }
 
 double ray_intersect_plane(t_vector start, t_vector dir, t_obj *plane)
 {
@@ -155,13 +155,6 @@ t_obj *get_closest_object(double *closest_t, t_vector start, t_vector dir, t_sce
 	return (closest_obj);
 }
 
-
-
-
-
-
-
-
 void scene_init(t_RTv1 *RTv1, char *file_name)
 {
     read_scene(&(RTv1->scene), file_name);
@@ -185,96 +178,25 @@ void provider(t_RTv1 *RTv1)
     mlx_put_image_to_window(RTv1->mlx_ptr, RTv1->win_ptr, RTv1->image, 0, 0);
 }
 
-int mouse_pressed(int button, int x, int y, void *param)
-{
-	t_RTv1 *RTv1;
-	t_vector pixel_pos_3d;
-	double trash = 99999.0;
-	t_obj *ptr = NULL;
-	RTv1 = (t_RTv1 *)param;
-
-	if (button == 1)
-	{
-		pixel_pos_3d = get_pixel_pisition(x - CW / 2, -y + CH / 2);
-
-		ptr = get_closest_object(&trash, RTv1->scene.camera.center, pixel_pos_3d, &(RTv1->scene));
-		if (ptr)
-			RTv1->selected = ptr;
-	}
-
-	else if (button == 4)
-	{
-		RTv1->scene.camera.center.z -= 0.2;
-	}
-
-	else if (button == 5)
-		RTv1->scene.camera.center.z += 0.2;
-
-	provider(RTv1);
-	return (0);
-}
-
-
-int key_pressed(int key, void *param)
-{
-	t_RTv1 *RTv1;
-
-	RTv1 = (t_RTv1 *)param;
-
-	if (!RTv1->selected)
-		RTv1->selected = &(RTv1->scene.objs[0]);
-
-	if (key == 0x35)
-	{
-		exit(1);
-	}
-
-	else if (key == 0x7C)
-	{
-		RTv1->selected->center.x += 0.05;
-	}
-	else if (key ==0x7B)
-	{
-		RTv1->selected->center.x -= 0.05;
-	}
-	else if (key ==0x7E)
-	{
-		RTv1->selected->center.y += 0.05;
-	}
-	else if (key ==0x7D)
-	{
-		RTv1->selected->center.y -= 0.05;
-	}
-	else if (key ==0x5B)
-	{
-		RTv1->selected->center.z += 0.05;
-	}
-	else if (key ==0x54)
-	{
-		RTv1->selected->center.z -= 0.05;
-	}
-	provider(RTv1);
-}
-
-
 int main(int ac, char **av)
 {
-    t_RTv1 RTv1;
+    static t_RTv1 RTv1;
 
     if (ac != 2)
         exit(-1);
 
     graphics_init(&RTv1);
     scene_init(&RTv1, av[1]);
+	// RTv1.left_mouse_pressed = 0;
+	// RTv1.right_mouse_pressed = 0;
+	// RTv1.prev_x = 0;
+	// RTv1.prev_y = 0;
     provider(&RTv1);
-
-
-
-
-
 
 	mlx_hook(RTv1.win_ptr, 2, 4, key_pressed, &RTv1);
 	mlx_hook(RTv1.win_ptr, 4, 0, mouse_pressed, &RTv1);
+	mlx_hook(RTv1.win_ptr, 5, 0, mouse_release, &RTv1);
+	mlx_hook(RTv1.win_ptr, 6, 0, mouse_move, &RTv1);
 
     mlx_loop(RTv1.mlx_ptr);
     return (0);

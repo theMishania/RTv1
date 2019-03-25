@@ -89,6 +89,8 @@ typedef struct s_scene
 {
 	int c_objs;
 	int c_lights;
+	double view_alpha;
+	double view_beta;
 	t_camera camera;
 	t_light lights[10];
 	t_obj objs[10];
@@ -101,7 +103,14 @@ typedef struct s_RTv1
 	void *image;
 	char *image_data;
 	t_obj *selected;
+	int left_mouse_pressed;
+	int right_mouse_pressed;
+	int prev_x;
+	int prev_y;
 
+	int origin_x;
+	int origin_y;
+	
 	t_scene scene;
 
 	cl_int				ret;
@@ -125,6 +134,7 @@ typedef struct s_RTv1
 	cl_mem				utils_memobj;
 }			t_RTv1;
 
+
 void read_scene(t_scene *scene, char* file_name);
 
 double ft_atof(char *str);
@@ -145,6 +155,14 @@ t_vector vector_init(double x, double y, double z);
 t_rgb color_to_rgb(int color);
 int rgb_to_color(t_rgb rgb);
 
+t_vector get_pixel_pisition(int x, int y);
+
+int mouse_pressed(int button, int x, int y, void *param);
+int key_pressed(int key, void *param);
+int mouse_release(int button, int x, int y, void *param);
+int mouse_move(int x, int y, void *param);
+
+t_obj *get_closest_object(double *closest_t, t_vector start, t_vector dir, t_scene *scene);
 
 
 void graphics_init(t_RTv1 *RTv1);

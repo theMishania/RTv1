@@ -3,18 +3,18 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: chorange <chorange@student.42.fr>          +#+  +:+       +#+         #
+#    By: cocummin <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2019/02/18 18:53:25 by chorange          #+#    #+#              #
-#    Updated: 2019/03/21 19:39:27 by chorange         ###   ########.fr        #
+#    Updated: 2019/03/25 14:53:06 by cocummin         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = RTv1
 
-FLAGS = -fsanitize=address  #-Wextra -Wall -Werror
+FLAGS = #-fsanitize=address  #-Wextra -Wall -Werror
 
-OBJECTS = main.o graphics_init.o vect_math.o color.o read_scene.o atof.o get_next_line.o
+OBJECTS = main.o graphics_init.o vect_math.o color.o read_scene.o atof.o get_next_line.o key_utils.o
 
 LIBS = -L./minilibx -lmlx -L./libft -lft -lm -framework OpenGL -framework AppKit -framework OpenCL
 
