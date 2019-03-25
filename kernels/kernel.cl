@@ -2,7 +2,7 @@
 #define CH 1000
 #define VW 1
 #define VH 1
-#define DEPTH 2
+#define DEPTH 5
 
 
 typedef enum
@@ -461,16 +461,10 @@ int cast_ray(t_cl_scene *cl_scene, double3 start, double3 dir, char flag)
 	start = start + dir * closest_t;
 	N = get_normal(start, *ptr);
 	dir = reflect_ray((-1.0) * dir, N);
-
-	if (flag == 1)
-	{
-		printf("%f\n", start.x);
-		printf("%f\n", start.y);
-		printf("%f\n\n", start.z);
-	}
-
+	closest_t = 99999.0;
 	while (i <= DEPTH && (ptr->reflective > 0) && get_closest_object(&closest_t, start, dir, cl_scene))
 	{
+		closest_t = 99999.0;
 		ptr = get_closest_object(&closest_t, start, dir, cl_scene);
 		start = start + dir * closest_t;
 		N = get_normal(start, *ptr);
@@ -479,12 +473,6 @@ int cast_ray(t_cl_scene *cl_scene, double3 start, double3 dir, char flag)
 		
 	}
 
-	if (flag == 1)
-	{
-		printf("%f\n", dir.x);
-		printf("%f\n", dir.y);
-		printf("%f\n\n", dir.z);
-	}
 		
 	
 
@@ -509,6 +497,7 @@ int cast_ray(t_cl_scene *cl_scene, double3 start, double3 dir, char flag)
 
 		if (i != 0)
 		{
+			closest_t = 99999.0;
 			ptr = get_closest_object(&closest_t, start, dir, cl_scene);
 			start = start + dir * closest_t;
 			N = get_normal(start, *ptr);
