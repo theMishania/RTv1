@@ -6,11 +6,30 @@
 /*   By: cocummin <cocummin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/03/25 12:38:21 by cocummin          #+#    #+#             */
-/*   Updated: 2019/03/28 11:33:05 by cocummin         ###   ########.fr       */
+/*   Updated: 2019/03/28 17:32:06 by cocummin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RTv1.h"
+
+t_vector	rotate_view(t_vector point, double alpha, double beta)
+{
+	t_vector tempo = point;
+
+	// point.x = tempo.x * cos(beta) + tempo.z * sin(alpha);
+	// point.y = tempo.x * sin(alpha) * sin(beta) + tempo.y * cos(alpha) - tempo.z * sin(alpha) * cos(beta);
+	// point.z = tempo.x * sin(alpha) * sin(beta) * tempo.y * sin(alpha) + tempo.z * cos(alpha) * cos(beta);
+
+	point.y = tempo.y * cos(alpha) + tempo.z * sin(alpha);
+	point.z = -tempo.y * sin(alpha) + tempo.z * cos(alpha);
+
+	tempo = point;
+
+	point.x = tempo.x * cos(beta) - tempo.z * sin(beta);
+	point.z = tempo.x * sin(beta) + tempo.z * cos(beta);
+
+	return (point);
+}
 
 int mouse_pressed(int button, int x, int y, void *param)
 {
@@ -19,10 +38,14 @@ int mouse_pressed(int button, int x, int y, void *param)
 	double trash = 99999.0;
 	static t_obj *ptr = NULL;
 	RTv1 = (t_RTv1 *)param;
+    RTv1->prev_x = x;
+    RTv1->prev_y = y;
+
 	if (button == 1)
 	{
         RTv1->left_mouse_pressed = 1;
 		pixel_pos_3d = get_pixel_pisition(x - CW / 2, -y + CH / 2);
+        pixel_pos_3d = rotate_view(pixel_pos_3d, RTv1->scene.view_alpha, RTv1->scene.view_beta);
 		ptr = get_closest_object(&trash, RTv1->scene.camera.center, pixel_pos_3d, &(RTv1->scene));
 		if (ptr)
 			RTv1->selected = ptr;
@@ -39,9 +62,7 @@ int mouse_pressed(int button, int x, int y, void *param)
 		RTv1->scene.camera.center.z += 0.2;
     else if (button == 2)
     {
-        RTv1->right_mouse_pressed = 1;
-        RTv1->origin_x = x;
-        RTv1->origin_y = y;        
+        RTv1->right_mouse_pressed = 1;      
     }
     provider(RTv1);
 	return (0);
@@ -68,10 +89,10 @@ int mouse_move(int x, int y, void *param)
     
     if (RTv1->right_mouse_pressed)
     {
-        dx = x - RTv1->origin_x;
-        dy = y - RTv1->origin_y;
-        RTv1->scene.view_alpha = atan((double)dy * 0.003 / (double)(VW));
-        RTv1->scene.view_beta = atan((double)dx * 0.003 / (double)(VW));
+        dx = x - RTv1->prev_x;
+        dy = y - RTv1->prev_y;
+        RTv1->scene.view_alpha += atan((double)dy * 0.001 / (double)(VW));
+        RTv1->scene.view_beta += atan((double)dx * 0.001 / (double)(VW));
     }
     else if (RTv1->left_mouse_pressed)
     {

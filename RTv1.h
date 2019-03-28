@@ -107,9 +107,6 @@ typedef struct s_RTv1
 	int right_mouse_pressed;
 	int prev_x;
 	int prev_y;
-
-	int origin_x;
-	int origin_y;
 	
 	t_scene scene;
 
