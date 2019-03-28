@@ -2,7 +2,7 @@
 #define CH 1000
 #define VW 1
 #define VH 1
-#define DEPTH 10
+#define DEPTH 5
 
 
 typedef enum

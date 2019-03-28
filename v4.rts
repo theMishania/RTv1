@@ -1,0 +1,74 @@
+camera_init
+{
+	position = (0.0, 0.0, -2.5)
+}
+
+
+
+new light
+{
+	type = point
+	intensity = 0.4
+	position = (7.0, 1.0, 1.0)
+}
+
+new light
+{
+	type = ambient
+	intensity = 0.2
+}
+
+new object
+{
+	type = sphere;
+	position = (0.0, 0.0, 3.0)
+	radius = 1.0
+	color = 65280
+	specular = 7.0
+	reflective = 0.0
+}
+
+new object
+{
+	type = plane
+	direction = (0.0, 0.0, -1.0)
+	position = (0.0, 0.0, 100.0)
+	color = 255
+	specular = 0.0
+	reflective = 0.0
+}
+
+new object
+{
+	type = plane
+	direction = (0.0, 1.0, 0.0)
+	position = (-1.0, -1.0, 0.0)
+	color = 7895160
+	specular = 0.0
+	reflective = 0.0
+}
+
+new object
+{
+	type = cylinder
+	radius = 0.5
+	direction = (1.0, -1.0, -1.0)
+	position = (1.2, 1.5, 2.8)
+	color = 562750
+	specular = 1.0
+	reflective = 0.0
+}
+
+new object
+{
+	type = cone
+	angle = 0.5
+	direction = (1.0, 1.0, 0.0)
+	position = (-2.0, -0.5, 4.3)
+	color = 16711935
+	specular = 0.0
+	reflective = 0.0
+}
+
+
+end
