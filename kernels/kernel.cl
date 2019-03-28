@@ -2,7 +2,7 @@
 #define CH 1000
 #define VW 1
 #define VH 1
-#define DEPTH 5
+#define DEPTH 10
 
 
 typedef enum
@@ -175,13 +175,21 @@ double3 get_pixel_pisition(int x, int y)
 
 double3	rotate_view(double3 point, double alpha, double beta)
 {
-	// double3 tempo = point;
+	double3 tempo = point;
 
 	// point.x = tempo.x * cos(beta) + tempo.z * sin(alpha);
 	// point.y = tempo.x * sin(alpha) * sin(beta) + tempo.y * cos(alpha) - tempo.z * sin(alpha) * cos(beta);
 	// point.z = tempo.x * sin(alpha) * sin(beta) * tempo.y * sin(alpha) + tempo.z * cos(alpha) * cos(beta);
 
-	// return (point);
+	point.y = tempo.y * cos(alpha) + tempo.z * sin(alpha);
+	point.z = -tempo.y * sin(alpha) + tempo.z * cos(alpha);
+
+	tempo = point;
+
+	point.x = tempo.x * cos(beta) - tempo.z * sin(beta);
+	point.z = tempo.x * sin(beta) + tempo.z * cos(beta);
+
+	return (point);
 }
 
 double ray_intersect_plane(double3 start, double3 dir, t_cl_obj *plane)
@@ -527,6 +535,8 @@ __kernel void mishania(__global char *image_data, __global t_scene *scene)
 {
 	int x = get_global_id(0) / CH;
 	int y = get_global_id(0) % CH;
+	double alpha = scene->view_alpha;
+	double beta = scene->view_beta;
 	double3 pixel_pos_3d;
 
 	t_cl_scene cl_scene;
@@ -566,7 +576,7 @@ __kernel void mishania(__global char *image_data, __global t_scene *scene)
 	}
 
 	pixel_pos_3d = get_pixel_pisition(x - CW / 2, -y + CH / 2);
-	//pixel_pos_3d = rotate_view(pixel_pos_3d, scene->view_alpha, scene->view_beta);
+	pixel_pos_3d = rotate_view(pixel_pos_3d, alpha, beta);
 	char flag = 0;
 	if (x == 320 && y == 700)
 		flag = 1;

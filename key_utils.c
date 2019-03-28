@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   key_utils.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cocummin <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: cocummin <cocummin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/03/25 12:38:21 by cocummin          #+#    #+#             */
-/*   Updated: 2019/03/25 17:08:21 by cocummin         ###   ########.fr       */
+/*   Updated: 2019/03/28 11:33:05 by cocummin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,8 +70,8 @@ int mouse_move(int x, int y, void *param)
     {
         dx = x - RTv1->origin_x;
         dy = y - RTv1->origin_y;
-        RTv1->scene.view_alpha = atan((double)dx / (double)(CW));
-        RTv1->scene.view_beta = atan((double)dy / (double)(CW));
+        RTv1->scene.view_alpha = atan((double)dy * 0.003 / (double)(VW));
+        RTv1->scene.view_beta = atan((double)dx * 0.003 / (double)(VW));
     }
     else if (RTv1->left_mouse_pressed)
     {
