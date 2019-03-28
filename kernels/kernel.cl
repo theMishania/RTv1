@@ -199,19 +199,46 @@ double ray_intersect_plane(double3 start, double3 dir, t_cl_obj *plane)
 	double cen_dot_c;
 	double t;
 
+	cen_dot_c = dot((start - plane->center), plane->dir);
+	dir_dot_c = dot(dir, plane->dir);
+	/*
 	start = start - plane->center;
 	dir_dot_c = dot(dir, plane->dir);
 	cen_dot_c = dot(start, plane->dir);
 
 	if (dir_dot_c != 0.0)
 	{
-		t = -cen_dot_c / dir_dot_c;
-		if (t < 100000.0)
-			return(t);
-	}
-	return(0.0);
+	t = -cen_dot_c / dir_dot_c;
+	if (t < zeroThreshold)
+	return(t);
+	}*/
+	if (dir_dot_c == 0 || (dir_dot_c < 0 && cen_dot_c < 0) || (dir_dot_c > 0 && cen_dot_c > 0))
+	return(0);
+	t = -cen_dot_c / dir_dot_c;
+	return (t > zeroThreshold ? t : 0);
 
 }
+
+// double ray_intersect_plane(double3 start, double3 dir, t_cl_obj *plane)
+// {
+// 	double zeroThreshold = 0.0001;
+// 	double dir_dot_c;
+// 	double cen_dot_c;
+// 	double t;
+
+// 	start = start - plane->center;
+// 	dir_dot_c = dot(dir, plane->dir);
+// 	cen_dot_c = dot(start, plane->dir);
+
+// 	if (dir_dot_c != 0.0)
+// 	{
+// 		t = -cen_dot_c / dir_dot_c;
+// 		if (t < 100000.0)
+// 			return(t);
+// 	}
+// 	return(0.0);
+
+// }
 
 
 double ray_intersect_cylinder(double3 start, double3 dir, t_cl_obj *cyl)

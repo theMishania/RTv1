@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cocummin <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: cocummin <cocummin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/03/20 19:25:19 by cocummin          #+#    #+#             */
-/*   Updated: 2019/03/25 16:32:38 by cocummin         ###   ########.fr       */
+/*   Updated: 2019/03/28 18:59:13 by cocummin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,27 @@ t_vector get_pixel_pisition(int x, int y)
 // 	return (ret);
 // }
 
+// double ray_intersect_plane(t_vector start, t_vector dir, t_obj *plane)
+// {
+// 	double zeroThreshold = 0.0001;
+// 	double dir_dot_c;
+// 	double cen_dot_c;
+// 	double t;
+
+// 	start = vector_subt(start, plane->center); // перенесем центр координат в центр сферы
+// 	dir_dot_c = scal_mult(dir, plane->dir);
+// 	cen_dot_c = scal_mult(start, plane->dir);
+
+// 	if (dir_dot_c != 0.0)
+// 	{
+// 		t = -cen_dot_c / dir_dot_c;
+// 		if (t < 100000.0)
+// 			return(t);
+// 	}
+// 	return(0.0);
+
+// }
+
 double ray_intersect_plane(t_vector start, t_vector dir, t_obj *plane)
 {
 	double zeroThreshold = 0.0001;
@@ -40,17 +61,24 @@ double ray_intersect_plane(t_vector start, t_vector dir, t_obj *plane)
 	double cen_dot_c;
 	double t;
 
-	start = vector_subt(start, plane->center); // перенесем центр координат в центр сферы
+	start = vector_subt(start, plane->center);
 	dir_dot_c = scal_mult(dir, plane->dir);
 	cen_dot_c = scal_mult(start, plane->dir);
+	/*
+	start = start - plane->center;
+	dir_dot_c = dot(dir, plane->dir);
+	cen_dot_c = dot(start, plane->dir);
 
 	if (dir_dot_c != 0.0)
 	{
-		t = -cen_dot_c / dir_dot_c;
-		if (t < 100000.0)
-			return(t);
-	}
-	return(0.0);
+	t = -cen_dot_c / dir_dot_c;
+	if (t < zeroThreshold)
+	return(t);
+	}*/
+	if (dir_dot_c == 0.0 || (dir_dot_c < 0.0001 && cen_dot_c < 0.0001) || (dir_dot_c > 0.0001 && cen_dot_c > 0.0001))
+	return(0);
+	t = -cen_dot_c / dir_dot_c;
+	return (t >= zeroThreshold ? t : 0);
 
 }
 
