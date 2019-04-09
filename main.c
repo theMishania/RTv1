@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cocummin <cocummin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chorange <chorange@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/03/20 19:25:19 by cocummin          #+#    #+#             */
-/*   Updated: 2019/03/28 18:59:13 by cocummin         ###   ########.fr       */
+/*   Updated: 2019/04/09 20:37:07 by chorange         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -204,6 +204,9 @@ void provider(t_RTv1 *RTv1)
     RTv1->ret = clEnqueueReadBuffer(RTv1->command_queue, RTv1->memobj, CL_TRUE, 0, CW * CH * 4, RTv1->image_data, 0, NULL, NULL);
 	
     mlx_put_image_to_window(RTv1->mlx_ptr, RTv1->win_ptr, RTv1->image, 0, 0);
+	if (!(RTv1->selected))
+        RTv1->selected = &(RTv1->scene.objs[0]);////////////////
+	draw_guide(RTv1);
 }
 
 int main(int ac, char **av)

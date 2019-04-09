@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   key_utils.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cocummin <cocummin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chorange <chorange@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/03/25 12:38:21 by cocummin          #+#    #+#             */
-/*   Updated: 2019/03/28 17:32:06 by cocummin         ###   ########.fr       */
+/*   Updated: 2019/04/09 20:39:02 by chorange         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,18 +151,22 @@ int key_pressed(int key, void *param)
 	}
 	else if (key ==0x1B)
 	{
-        if ( RTv1->left_mouse_pressed == 1)
-		    RTv1->selected->center.z += 0.05;
-        else
-            RTv1->scene.camera.center.z += 0.5;
+        //if ( RTv1->left_mouse_pressed == 1)
+		    RTv1->selected->center.z += 0.2;
+        //else
+        ///    RTv1->scene.camera.center.z += 0.5;
 	}
-	else if (key ==0x18)
+	else if (key == 0x18)
 	{
-        if ( RTv1->left_mouse_pressed == 1)
-		    RTv1->selected->center.z -= 0.05;
-        else
-            RTv1->scene.camera.center.z  -= 0.5;
-	}
+       // if ( RTv1->left_mouse_pressed == 1)
+		    RTv1->selected->center.z -= 0.2;
+       // else
+         //   RTv1->scene.camera.center.z  -= 0.5;
+	}/*
+    else if (key == 0x08)
+    {
+        RTv1->selected->rgb = color_to_rgb(rgb_to_color(RTv1->selected->rgb) + 1);
+    }*/
 	provider(RTv1); 
     return (0);
 }

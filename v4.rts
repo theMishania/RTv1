@@ -30,20 +30,28 @@ new object
 
 new object
 {
-	type = plane
-	direction = (0.0, 0.0, -1.0)
-	position = (0.0, 0.0, 100.0)
-	color = 255
+	type = plane;
+	position = (0.0, -5.0, 0.0)
+	direction = (0.0, 1.0, 0.0)
+	color = 65230
 	specular = 0.0
 	reflective = 0.0
 }
-
 new object
 {
-	type = plane
-	direction = (0.0, 1.0, 0.0)
-	position = (-1.0, -1.0, 0.0)
-	color = 7895160
+	type = plane;
+	position = (0.0, 5.0, 0.0)
+	direction = (0.0, -1.0, 0.0)
+	color = 65230
+	specular = 0.0
+	reflective = 0.0
+}
+new object
+{
+	type = plane;
+	position = (0.0, -0.0, 30.0)
+	direction = (0.0, 0.0, -1.0)
+	color = 65230
 	specular = 0.0
 	reflective = 0.0
 }
@@ -62,7 +70,7 @@ new object
 new object
 {
 	type = cone
-	angle = 0.5
+	angle = 0.6
 	direction = (1.0, 1.0, 0.0)
 	position = (-2.0, -0.5, 4.3)
 	color = 16711935

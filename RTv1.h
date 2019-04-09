@@ -92,8 +92,8 @@ typedef struct s_scene
 	double view_alpha;
 	double view_beta;
 	t_camera camera;
-	t_light lights[10];
-	t_obj objs[10];
+	t_light lights[100];
+	t_obj objs[100];
 }		t_scene;
 
 typedef struct s_RTv1
@@ -163,5 +163,9 @@ t_obj *get_closest_object(double *closest_t, t_vector start, t_vector dir, t_sce
 
 
 void graphics_init(t_RTv1 *RTv1);
+
+
+
+void		draw_guide(t_RTv1 *RTv1);
 
 #endif

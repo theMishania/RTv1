@@ -4,6 +4,8 @@
 #define VH 1
 #define DEPTH 5
 
+#define UPPER_BOUND 99999.9
+
 
 typedef enum
 {
@@ -74,8 +76,8 @@ typedef struct s_scene
 	double view_alpha;
 	double view_beta;
 	t_camera camera;
-	t_light lights[10];
-	t_obj objs[10];
+	t_light lights[100];
+	t_obj objs[100];
 }		t_scene;
 
 typedef struct s_cl_obj
@@ -116,8 +118,8 @@ typedef struct s_cl_scene
 	int c_objs;
 	int c_lights;
 	t_cl_camera camera;
-	t_cl_light lights[10];
-	t_cl_obj objs[10];
+	t_cl_light lights[100];
+	t_cl_obj objs[100];
 }		t_cl_scene;
 
 t_rgb color_to_rgb(int color)
@@ -281,15 +283,21 @@ double ray_intersect_cone(double3 start, double3 dir, t_cl_obj *cone)
 	double c = dot(start, start) - (1 + k * k) * dot_start_cone_dir * dot_start_cone_dir;
 	double D = b*b - 4*a*c; // Дискриминант
 
-	if ( D < 0.0 )
+	if ( D < zeroThreshold )
 		return (0.0); // Если меньше некоторого эпсилон (никогда не сравнивайте даблы на чистый ноль!), то не пересекается
 	double qD = sqrt(D); // Иначе вычислим точки пересечения по всем известной формуле корней
 	double t1 = ( -b + qD)/(2*a); // Больший корень
 	double t2 = ( -b - qD)/(2*a); // Меньший корень
-	if (t1 <= zeroThreshold) // Если больший корень отрицательный, то мы пересекаем сферу в противоположном направлении луча
+	/*if (t1 <= zeroThreshold) // Если больший корень отрицательный, то мы пересекаем сферу в противоположном направлении луча
 		return (0.0); // То есть не пересекаем
 	double t = (t2 > zeroThreshold) ? t2 : t1; // Если да, то точка пересечения это больший корень, если меньший за точкой старта (мы "внутри сферы"), иначе меньший корень. Точка пересечения пригодится дальше.
-		return (t);
+		return (t);*/
+
+	if ((t1 <= t2 && t1 >= 0.0) || (t1 >= 0 && t2 < 0.0))
+		return (t1);
+	if ((t2 <= t1 && t2 >= 0.0) || (t2 >= 0 && t1 < 0.0))
+		return (t2);
+	return (0.0);
 }
 
 
@@ -401,7 +409,8 @@ double compute_lighting(double3 P, double3 N, double3 V, double s, t_cl_scene *c
 
 	for (int i = 0; i < cl_scene->c_lights; i++)
 	{
-		shadow_t = 9999;
+		shadow_t = UPPER_BOUND;
+		shadow_obj = 0;
 		int j = 0;
 		if (cl_scene->lights[i].type == ambient)
 			intensity += cl_scene->lights[i].intensity;
@@ -415,7 +424,7 @@ double compute_lighting(double3 P, double3 N, double3 V, double s, t_cl_scene *c
 			while (j < cl_scene->c_objs)
 			{
 				t = ray_intersect_obj(P, L, &(cl_scene->objs[j]));
-				if (t != 0.0 && t < shadow_t)
+				if (t > 0.0001 && ((cl_scene->lights[i].type == point && length(L) > length(L * t)) || (cl_scene->lights[i].type != point)))
 				{
 					shadow_t = t;
 					shadow_obj = &(cl_scene->objs[j]);
@@ -427,14 +436,14 @@ double compute_lighting(double3 P, double3 N, double3 V, double s, t_cl_scene *c
 
 			double n_dot_l = dot(N, L);
 			if (n_dot_l > 0.0)
-				intensity += cl_scene->lights[i].intensity * n_dot_l / (length(N) * length(L));
+				intensity += cl_scene->lights[i].intensity * n_dot_l / (/*1.0/*length(N) */ length(L));
 
 			if (s > 0.0)
 			{
 				double3 R = reflect_ray(L, N);
 				double r_dot_v = dot(R, V);
 				if (r_dot_v > 0.0)
-					intensity += cl_scene->lights[i].intensity * pow(r_dot_v / (sqrt(dot(R, R)) * sqrt(dot(V, V))), s);
+					intensity += cl_scene->lights[i].intensity * pow(r_dot_v / (/*sqrt(dot(R, R))*/length(R) * /*sqrt(dot(V, V))*/length(V)), s);
 			}
 		}
 	}
@@ -496,7 +505,7 @@ int cast_ray(t_cl_scene *cl_scene, double3 start, double3 dir, char flag)
 	t_rgb rgb;
 	double3 N;
 	int i = 0;
-	closest_t = 99999.0;
+	closest_t = UPPER_BOUND;
 	rgb.r = 0;
 	rgb.b = 0;
 	rgb.g = 0;
@@ -505,24 +514,24 @@ int cast_ray(t_cl_scene *cl_scene, double3 start, double3 dir, char flag)
 
 	if (!(ptr = get_closest_object(&closest_t, start, dir, cl_scene)))
 		return (0x000000);
-	
+
 	start = start + dir * closest_t;
 	N = get_normal(start, *ptr);
 	dir = reflect_ray((-1.0) * dir, N);
-	closest_t = 99999.0;
+	closest_t = UPPER_BOUND;
 	while (i <= DEPTH && (ptr->reflective > 0) && get_closest_object(&closest_t, start, dir, cl_scene))
 	{
-		closest_t = 99999.0;
+		closest_t = UPPER_BOUND;
 		ptr = get_closest_object(&closest_t, start, dir, cl_scene);
 		start = start + dir * closest_t;
 		N = get_normal(start, *ptr);
 		dir = reflect_ray((-1.0) * dir, N);
 		i++;
-		
+
 	}
 
-		
-	
+
+
 
 	while (i >= 0)
 	{
