@@ -2,8 +2,9 @@
 #define CH 1000
 #define VW 1
 #define VH 1
-#define DEPTH 0
+#define DEPTH 5
 #define UPPER_BOUND 99999.9
+
 
 
 typedef enum
@@ -66,6 +67,7 @@ typedef struct s_light
 typedef struct s_camera
 {
 	t_vector center;
+	t_vector dir;
 }		t_camera;
 
 typedef struct s_scene
@@ -91,13 +93,12 @@ typedef struct s_cl_obj
 
 	double3 center;
 	double3 dir;
-
-	//struct s_obj *next;
 }		t_cl_obj;
 
 typedef struct s_cl_camera
 {
 	double3 center;
+	double3 dir;
 }		t_cl_camera;
 
 typedef struct s_cl_light
@@ -107,10 +108,7 @@ typedef struct s_cl_light
 
 	double3 center;
 	double3 dir;
-
-//	struct s_light *next;
 }				t_cl_light;
-
 
 typedef struct s_cl_scene
 {
@@ -178,10 +176,6 @@ double3	rotate_view(double3 point, double alpha, double beta)
 {
 	double3 tempo = point;
 
-	// point.x = tempo.x * cos(beta) + tempo.z * sin(alpha);
-	// point.y = tempo.x * sin(alpha) * sin(beta) + tempo.y * cos(alpha) - tempo.z * sin(alpha) * cos(beta);
-	// point.z = tempo.x * sin(alpha) * sin(beta) * tempo.y * sin(alpha) + tempo.z * cos(alpha) * cos(beta);
-
 	point.y = tempo.y * cos(alpha) + tempo.z * sin(alpha);
 	point.z = -tempo.y * sin(alpha) + tempo.z * cos(alpha);
 
@@ -202,17 +196,6 @@ double ray_intersect_plane(double3 start, double3 dir, t_cl_obj *plane)
 
 	cen_dot_c = dot((start - plane->center), plane->dir);
 	dir_dot_c = dot(dir, plane->dir);
-	/*
-	start = start - plane->center;
-	dir_dot_c = dot(dir, plane->dir);
-	cen_dot_c = dot(start, plane->dir);
-
-	if (dir_dot_c != 0.0)
-	{
-	t = -cen_dot_c / dir_dot_c;
-	if (t < zeroThreshold)
-	return(t);
-	}*/
 	if (dir_dot_c == 0 || (dir_dot_c < 0 && cen_dot_c < 0) || (dir_dot_c > 0 && cen_dot_c > 0))
 	return(0);
 	t = -cen_dot_c / dir_dot_c;
@@ -220,50 +203,28 @@ double ray_intersect_plane(double3 start, double3 dir, t_cl_obj *plane)
 
 }
 
-// double ray_intersect_plane(double3 start, double3 dir, t_cl_obj *plane)
-// {
-// 	double zeroThreshold = 0.0001;
-// 	double dir_dot_c;
-// 	double cen_dot_c;
-// 	double t;
-
-// 	start = start - plane->center;
-// 	dir_dot_c = dot(dir, plane->dir);
-// 	cen_dot_c = dot(start, plane->dir);
-
-// 	if (dir_dot_c != 0.0)
-// 	{
-// 		t = -cen_dot_c / dir_dot_c;
-// 		if (t < 100000.0)
-// 			return(t);
-// 	}
-// 	return(0.0);
-
-// }
-
-
 double ray_intersect_cylinder(double3 start, double3 dir, t_cl_obj *cyl)
 {
 	double zeroThreshold = 0.0001;
 
-	start = start - cyl->center; // перенесем центр координат в центр сферы
+	start = start - cyl->center;
 
 	double dot_start_cyl_dir = dot(start, cyl->dir);
 	double dot_dir_cyl_dir = dot(dir, cyl->dir);
 
-	double a = dot(dir, dir) - dot_dir_cyl_dir * dot_dir_cyl_dir; // Здесь и далее операция * над векторами - скалярное произведение
+	double a = dot(dir, dir) - dot_dir_cyl_dir * dot_dir_cyl_dir;
 	double b = 2 * (dot(dir, start) - dot_dir_cyl_dir * dot_start_cyl_dir);
 	double c = dot(start, start) - dot_start_cyl_dir * dot_start_cyl_dir - cyl->radius * cyl->radius;
-	double D = b*b - 4*a*c; // Дискриминант
+	double D = b*b - 4*a*c;
 
 	if ( D < zeroThreshold )
-		return (0.0); // Если меньше некоторого эпсилон (никогда не сравнивайте даблы на чистый ноль!), то не пересекается
-	double qD = sqrt(D); // Иначе вычислим точки пересечения по всем известной формуле корней
-	double t1 = ( -b + qD)/(2*a); // Больший корень
-	double t2 = ( -b - qD)/(2*a); // Меньший корень
-	if (t1 <= zeroThreshold) // Если больший корень отрицательный, то мы пересекаем сферу в противоположном направлении луча
-		return (0.0); // То есть не пересекаем
-	double t = (t2 > zeroThreshold) ? t2 : t1; // Если да, то точка пересечения это больший корень, если меньший за точкой старта (мы "внутри сферы"), иначе меньший корень. Точка пересечения пригодится дальше.
+		return (0.0);
+	double qD = sqrt(D);
+	double t1 = ( -b + qD)/(2*a); 
+	double t2 = ( -b - qD)/(2*a);
+	if (t1 <= zeroThreshold)
+		return (0.0);
+	double t = (t2 > zeroThreshold) ? t2 : t1; 
 		return (t);
 }
 
@@ -271,30 +232,26 @@ double ray_intersect_cone(double3 start, double3 dir, t_cl_obj *cone)
 {
 	double zeroThreshold = 0.0001;
 
-	start = start - cone->center; // перенесем центр координат в центр сферы
+	start = start - cone->center;
 	double k = tan(cone->angle);
 
 	double dot_start_cone_dir = dot(start, cone->dir);
 	double dot_dir_cone_dir = dot(dir, cone->dir);
 
-	double a = dot(dir, dir) - (1 + k * k) * dot_dir_cone_dir * dot_dir_cone_dir; // Здесь и далее операция * над векторами - скалярное произведение
+	double a = dot(dir, dir) - (1 + k * k) * dot_dir_cone_dir * dot_dir_cone_dir;
 	double b = 2 * (dot(dir, start) - (1 + k * k) * dot_dir_cone_dir * dot_start_cone_dir);
 	double c = dot(start, start) - (1 + k * k) * dot_start_cone_dir * dot_start_cone_dir;
-	double D = b*b - 4*a*c; // Дискриминант
+	double D = b*b - 4*a*c;
 
 	if ( D < zeroThreshold )
-		return (0.0); // Если меньше некоторого эпсилон (никогда не сравнивайте даблы на чистый ноль!), то не пересекается
-	double qD = sqrt(D); // Иначе вычислим точки пересечения по всем известной формуле корней
-	double t1 = ( -b + qD)/(2*a); // Больший корень
-	double t2 = ( -b - qD)/(2*a); // Меньший корень
-	/*if (t1 <= zeroThreshold) // Если больший корень отрицательный, то мы пересекаем сферу в противоположном направлении луча
-		return (0.0); // То есть не пересекаем
-	double t = (t2 > zeroThreshold) ? t2 : t1; // Если да, то точка пересечения это больший корень, если меньший за точкой старта (мы "внутри сферы"), иначе меньший корень. Точка пересечения пригодится дальше.
-		return (t);*/
+		return (0.0);
+	double qD = sqrt(D);
+	double t1 = ( -b + qD)/(2*a);
+	double t2 = ( -b - qD)/(2*a);
 
-	if ((t1 <= t2 && t1 >= 0.0) || (t1 >= 0 && t2 < 0.0))
+	if ((t1 <= t2 && t1 >= zeroThreshold) || (t1 >= zeroThreshold && t2 < zeroThreshold))
 		return (t1);
-	if ((t2 <= t1 && t2 >= 0.0) || (t2 >= 0 && t1 < 0.0))
+	if ((t2 <= t1 && t2 >= zeroThreshold) || (t2 >= zeroThreshold && t1 < zeroThreshold))
 		return (t2);
 	return (0.0);
 }
@@ -304,20 +261,20 @@ double ray_intersect_sphere(double3 start, double3 dir, t_cl_obj *obj)
 {
 	double zeroThreshold = 0.0001;
 
-	start = start - obj->center; // перенесем центр координат в центр сферы
-	double a = dot(dir, dir); // Здесь и далее операция * над векторами - скалярное произведение
+	start = start - obj->center;
+	double a = dot(dir, dir);
 	double b = dot(start, dir);
 	double c = dot(start, start) - obj->radius * obj->radius;
-	double D = b*b -a*c; // Дискриминант
+	double D = b*b -a*c;
 
 	if ( D < zeroThreshold )
-		return (0.0); // Если меньше некоторого эпсилон (никогда не сравнивайте даблы на чистый ноль!), то не пересекается
-	double qD = sqrt(D); // Иначе вычислим точки пересечения по всем известной формуле корней
-	double t1 = ( -b + qD)/(a); // Больший корень
-	double t2 = ( -b - qD)/(a); // Меньший корень
-	if (t1 <= zeroThreshold) // Если больший корень отрицательный, то мы пересекаем сферу в противоположном направлении луча
-		return (0.0); // То есть не пересекаем
-	double t = (t2 > zeroThreshold) ? t2 : t1; // Если да, то точка пересечения это больший корень, если меньший за точкой старта (мы "внутри сферы"), иначе меньший корень. Точка пересечения пригодится дальше.
+		return (0.0);
+	double qD = sqrt(D);
+	double t1 = ( -b + qD)/(a);
+	double t2 = ( -b - qD)/(a);
+	if (t1 <= zeroThreshold) 
+		return (0.0);
+	double t = (t2 > zeroThreshold) ? t2 : t1; 
 		return (t);
 }
 
@@ -449,130 +406,293 @@ double compute_lighting(double3 P, double3 N, double3 V, double s, t_cl_scene *c
 	return (intensity);
 }
 
-// int cast_ray(t_cl_scene *cl_scene, double3 start, double3 dir, int depth)
-// {
-// 	//t_cl_obj closest_obj;
-// 	t_cl_obj *ptr;
-// 	double closest_t;
-// 	double intensity;
-// 	t_rgb rgb_color;
-
-
-// 	closest_t = 99999.0;
-// 	ptr = get_closest_object(&closest_t, start, dir, cl_scene);
-
-// 	if (ptr)
-// 	{
-// 		closest_obj = *ptr;
-
-// 		double3 P = start + dir * closest_t;
-
-// 		double3 N = get_normal(P, closest_obj);
-
-// 		intensity = compute_lighting(P, N, -dir, closest_obj.specular, cl_scene);
-
-// 		if ((closest_obj.rgb.r *= intensity) >= 255.0)
-// 			closest_obj.rgb.r = 255.0;
-// 		if ((closest_obj.rgb.g *= intensity) >= 255.0)
-// 			closest_obj.rgb.g = 255.0;
-// 		if ((closest_obj.rgb.b *= intensity) >= 255.0)
-// 			closest_obj.rgb.b = 255.0;
-
-// 		if (depth <= 0 || closest_obj.reflective <= 0)
-// 			return (rgb_to_color(closest_obj.rgb));////////////////////////////////break ;
-
-// 		double3 R = reflect_ray((-1.0) * dir, N);
-// /*
-// 		t_rgb reflected = color_to_rgb(cast_ray(cl_scene, P, R, depth - 1));
-
-// 		if ((closest_obj.rgb.r = closest_obj.rgb.r * (1 - closest_obj.reflective) + reflected.r * closest_obj.reflective) > 255.0)
-// 			closest_obj.rgb.r = 255.0;
-// 		if ((closest_obj.rgb.g = closest_obj.rgb.g * (1 - closest_obj.reflective) + reflected.g * closest_obj.reflective) > 255.0)
-// 			closest_obj.rgb.g = 255.0;
-// 		if ((closest_obj.rgb.b = closest_obj.rgb.b * (1 - closest_obj.reflective) + reflected.b * closest_obj.reflective) > 255.0)
-// 			closest_obj.rgb.b = 255.0;*/
-// 		return (rgb_to_color(closest_obj.rgb));
-// 	}
-// 	return(0x000000);
-// }
-
-int cast_ray(t_cl_scene *cl_scene, double3 start, double3 dir, char flag)
+int reflect5(t_cl_scene *cl_scene, double3 start, double3 dir, int depth)
 {
-	t_cl_obj *ptr = 0;
-	double closest_t;
+	t_cl_obj closest_obj;
+	t_cl_obj *ptr;
+	double closest_t = 99999.0;
 	double intensity;
-	t_rgb rgb;
-	double3 N;
-	int i = 0;
-	closest_t = UPPER_BOUND;
-	rgb.r = 0;
-	rgb.b = 0;
-	rgb.g = 0;
-	intensity = 0;
+	double spec_intensity = 0.0;
+	ptr = get_closest_object(&closest_t, start, dir, cl_scene);
 
-
-	if (!(ptr = get_closest_object(&closest_t, start, dir, cl_scene)))
-		return (0x000000);
-
-	start = start + dir * closest_t;
-	N = get_normal(start, *ptr);
-	dir = reflect_ray((-1.0) * dir, N);
-	closest_t = UPPER_BOUND;
-	while (i <= DEPTH && (ptr->reflective > 0) && get_closest_object(&closest_t, start, dir, cl_scene))
+	if (ptr)
 	{
-		closest_t = UPPER_BOUND;
-		ptr = get_closest_object(&closest_t, start, dir, cl_scene);
-		start = start + dir * closest_t;
-		N = get_normal(start, *ptr);
-		dir = reflect_ray((-1.0) * dir, N);
-		i++;
+		closest_obj = *ptr;
 
+		double3 P = start + dir * closest_t;
+
+		double3 N = get_normal(P, closest_obj);
+
+		intensity = compute_lighting(P, N, -dir, closest_obj.specular, cl_scene, &spec_intensity);
+
+		if ((closest_obj.rgb.r *= intensity) >= 255.0)
+			closest_obj.rgb.r = 255.0;
+		if ((closest_obj.rgb.g *= intensity) >= 255.0)
+			closest_obj.rgb.g = 255.0;
+		if ((closest_obj.rgb.b *= intensity) >= 255.0)
+			closest_obj.rgb.b = 255.0;
+
+		if ((closest_obj.rgb.r += 255.0 * spec_intensity) >= 255.0)
+			closest_obj.rgb.r = 255.0;
+		if ((closest_obj.rgb.g += 255.0 * spec_intensity) >= 255.0)
+			closest_obj.rgb.g = 255.0;
+		if ((closest_obj.rgb.b += 255.0 * spec_intensity) >= 255.0)
+			closest_obj.rgb.b = 255.0;
+
+		return (rgb_to_color(closest_obj.rgb));
 	}
-
-
-
-
-	while (i >= 0)
-	{
-		dir = reflect_ray(-dir, N);
-		double spec_intensity = 0.0;
-		intensity = compute_lighting(start, N, -dir, ptr->specular, cl_scene, &spec_intensity);
-
-		if ((ptr->rgb.r *= intensity) >= 255.0)
-			ptr->rgb.r = 255.0;
-		if ((ptr->rgb.g *= intensity) >= 255.0)
-			ptr->rgb.g = 255.0;
-		if ((ptr->rgb.b *= intensity) >= 255.0)
-			ptr->rgb.b = 255.0;
-
-		if ((rgb.r = ptr->rgb.r * (1 - ptr->reflective) + rgb.r * ptr->reflective) > 255.0)
-			rgb.r = 255.0;
-		if ((rgb.g = ptr->rgb.g * (1 - ptr->reflective) + rgb.g * ptr->reflective) > 255.0)
-			rgb.g = 255.0;
-		if ((rgb.b = ptr->rgb.b * (1 - ptr->reflective) + rgb.b * ptr->reflective) > 255.0)
-			rgb.b = 255.0;
-
-		if ((rgb.r += 255.0 * spec_intensity) >= 255.0)
-			rgb.r = 255.0;
-		if ((rgb.g += 255.0 * spec_intensity) >= 255.0)
-			rgb.g = 255.0;
-		if ((rgb.b += 255.0 * spec_intensity) >= 255.0)
-			rgb.b = 255.0;
-
-
-		if (i != 0)
-		{
-			closest_t = UPPER_BOUND;
-			ptr = get_closest_object(&closest_t, start, dir, cl_scene);
-			start = start + dir * closest_t;
-			N = get_normal(start, *ptr);
-		}
-		i--;
-	}
-	return (rgb_to_color(rgb));
-
+	return(0x000000);
 }
 
+int reflect4(t_cl_scene *cl_scene, double3 start, double3 dir, int depth)
+{
+	t_cl_obj closest_obj;
+	t_cl_obj *ptr;
+	double closest_t = 99999.0;
+	double intensity;
+	double spec_intensity = 0.0;
+	ptr = get_closest_object(&closest_t, start, dir, cl_scene);
+
+	if (ptr)
+	{
+		closest_obj = *ptr;
+
+		double3 P = start + dir * closest_t;
+
+		double3 N = get_normal(P, closest_obj);
+
+		intensity = compute_lighting(P, N, -dir, closest_obj.specular, cl_scene, &spec_intensity);
+
+		if ((closest_obj.rgb.r *= intensity) >= 255.0)
+			closest_obj.rgb.r = 255.0;
+		if ((closest_obj.rgb.g *= intensity) >= 255.0)
+			closest_obj.rgb.g = 255.0;
+		if ((closest_obj.rgb.b *= intensity) >= 255.0)
+			closest_obj.rgb.b = 255.0;
+
+		if ((closest_obj.rgb.r += 255.0 * spec_intensity) >= 255.0)
+			closest_obj.rgb.r = 255.0;
+		if ((closest_obj.rgb.g += 255.0 * spec_intensity) >= 255.0)
+			closest_obj.rgb.g = 255.0;
+		if ((closest_obj.rgb.b += 255.0 * spec_intensity) >= 255.0)
+			closest_obj.rgb.b = 255.0;
+
+		if (depth <= 0 || closest_obj.reflective <= 0)
+			return (rgb_to_color(closest_obj.rgb));
+
+		double3 R = reflect_ray((-1.0) * dir, N);
+
+		t_rgb reflected = color_to_rgb(reflect5(cl_scene, P, R, depth - 1));
+		if ((closest_obj.rgb.r = closest_obj.rgb.r * (1 - closest_obj.reflective) + reflected.r * closest_obj.reflective) > 255.0)
+			closest_obj.rgb.r = 255.0;
+		if ((closest_obj.rgb.g = closest_obj.rgb.g * (1 - closest_obj.reflective) + reflected.g * closest_obj.reflective) > 255.0)
+			closest_obj.rgb.g = 255.0;
+		if ((closest_obj.rgb.b = closest_obj.rgb.b * (1 - closest_obj.reflective) + reflected.b * closest_obj.reflective) > 255.0)
+			closest_obj.rgb.b = 255.0;
+		return (rgb_to_color(closest_obj.rgb));
+	}
+	return(0x000000);
+}
+
+int reflect3(t_cl_scene *cl_scene, double3 start, double3 dir, int depth)
+{
+	t_cl_obj closest_obj;
+	t_cl_obj *ptr;
+	double closest_t = 99999.0;
+	double intensity;
+	double spec_intensity = 0.0;
+	ptr = get_closest_object(&closest_t, start, dir, cl_scene);
+
+	if (ptr)
+	{
+		closest_obj = *ptr;
+
+		double3 P = start + dir * closest_t;
+
+		double3 N = get_normal(P, closest_obj);
+
+		intensity = compute_lighting(P, N, -dir, closest_obj.specular, cl_scene, &spec_intensity);
+
+		if ((closest_obj.rgb.r *= intensity) >= 255.0)
+			closest_obj.rgb.r = 255.0;
+		if ((closest_obj.rgb.g *= intensity) >= 255.0)
+			closest_obj.rgb.g = 255.0;
+		if ((closest_obj.rgb.b *= intensity) >= 255.0)
+			closest_obj.rgb.b = 255.0;
+
+		if ((closest_obj.rgb.r += 255.0 * spec_intensity) >= 255.0)
+			closest_obj.rgb.r = 255.0;
+		if ((closest_obj.rgb.g += 255.0 * spec_intensity) >= 255.0)
+			closest_obj.rgb.g = 255.0;
+		if ((closest_obj.rgb.b += 255.0 * spec_intensity) >= 255.0)
+			closest_obj.rgb.b = 255.0;
+
+		if (depth <= 0 || closest_obj.reflective <= 0)
+			return (rgb_to_color(closest_obj.rgb));
+
+		double3 R = reflect_ray((-1.0) * dir, N);
+
+		t_rgb reflected = color_to_rgb(reflect4(cl_scene, P, R, depth - 1));
+		if ((closest_obj.rgb.r = closest_obj.rgb.r * (1 - closest_obj.reflective) + reflected.r * closest_obj.reflective) > 255.0)
+			closest_obj.rgb.r = 255.0;
+		if ((closest_obj.rgb.g = closest_obj.rgb.g * (1 - closest_obj.reflective) + reflected.g * closest_obj.reflective) > 255.0)
+			closest_obj.rgb.g = 255.0;
+		if ((closest_obj.rgb.b = closest_obj.rgb.b * (1 - closest_obj.reflective) + reflected.b * closest_obj.reflective) > 255.0)
+			closest_obj.rgb.b = 255.0;
+		return (rgb_to_color(closest_obj.rgb));
+	}
+	return(0x000000);
+}
+
+int reflect2(t_cl_scene *cl_scene, double3 start, double3 dir, int depth)
+{
+	t_cl_obj closest_obj;
+	t_cl_obj *ptr;
+	double closest_t = 99999.0;
+	double intensity;
+	double spec_intensity = 0.0;
+	ptr = get_closest_object(&closest_t, start, dir, cl_scene);
+
+	if (ptr)
+	{
+		closest_obj = *ptr;
+
+		double3 P = start + dir * closest_t;
+
+		double3 N = get_normal(P, closest_obj);
+
+		intensity = compute_lighting(P, N, -dir, closest_obj.specular, cl_scene, &spec_intensity);
+
+		if ((closest_obj.rgb.r *= intensity) >= 255.0)
+			closest_obj.rgb.r = 255.0;
+		if ((closest_obj.rgb.g *= intensity) >= 255.0)
+			closest_obj.rgb.g = 255.0;
+		if ((closest_obj.rgb.b *= intensity) >= 255.0)
+			closest_obj.rgb.b = 255.0;
+
+		if ((closest_obj.rgb.r += 255.0 * spec_intensity) >= 255.0)
+			closest_obj.rgb.r = 255.0;
+		if ((closest_obj.rgb.g += 255.0 * spec_intensity) >= 255.0)
+			closest_obj.rgb.g = 255.0;
+		if ((closest_obj.rgb.b += 255.0 * spec_intensity) >= 255.0)
+			closest_obj.rgb.b = 255.0;
+
+		if (depth <= 0 || closest_obj.reflective <= 0)
+			return (rgb_to_color(closest_obj.rgb));
+
+		double3 R = reflect_ray((-1.0) * dir, N);
+
+		t_rgb reflected = color_to_rgb(reflect3(cl_scene, P, R, depth - 1));
+		if ((closest_obj.rgb.r = closest_obj.rgb.r * (1 - closest_obj.reflective) + reflected.r * closest_obj.reflective) > 255.0)
+			closest_obj.rgb.r = 255.0;
+		if ((closest_obj.rgb.g = closest_obj.rgb.g * (1 - closest_obj.reflective) + reflected.g * closest_obj.reflective) > 255.0)
+			closest_obj.rgb.g = 255.0;
+		if ((closest_obj.rgb.b = closest_obj.rgb.b * (1 - closest_obj.reflective) + reflected.b * closest_obj.reflective) > 255.0)
+			closest_obj.rgb.b = 255.0;
+		return (rgb_to_color(closest_obj.rgb));
+	}
+	return(0x000000);
+}
+
+int reflect1(t_cl_scene *cl_scene, double3 start, double3 dir, int depth)
+{
+	t_cl_obj closest_obj;
+	t_cl_obj *ptr;
+	double closest_t = 99999.0;
+	double intensity;
+	double spec_intensity = 0.0;
+	ptr = get_closest_object(&closest_t, start, dir, cl_scene);
+
+	if (ptr)
+	{
+		closest_obj = *ptr;
+
+		double3 P = start + dir * closest_t;
+
+		double3 N = get_normal(P, closest_obj);
+
+		intensity = compute_lighting(P, N, -dir, closest_obj.specular, cl_scene, &spec_intensity);
+
+		if ((closest_obj.rgb.r *= intensity) >= 255.0)
+			closest_obj.rgb.r = 255.0;
+		if ((closest_obj.rgb.g *= intensity) >= 255.0)
+			closest_obj.rgb.g = 255.0;
+		if ((closest_obj.rgb.b *= intensity) >= 255.0)
+			closest_obj.rgb.b = 255.0;
+
+		if ((closest_obj.rgb.r += 255.0 * spec_intensity) >= 255.0)
+			closest_obj.rgb.r = 255.0;
+		if ((closest_obj.rgb.g += 255.0 * spec_intensity) >= 255.0)
+			closest_obj.rgb.g = 255.0;
+		if ((closest_obj.rgb.b += 255.0 * spec_intensity) >= 255.0)
+			closest_obj.rgb.b = 255.0;
+
+		if (depth <= 0 || closest_obj.reflective <= 0)
+			return (rgb_to_color(closest_obj.rgb));
+
+		double3 R = reflect_ray((-1.0) * dir, N);
+
+		t_rgb reflected = color_to_rgb(reflect2(cl_scene, P, R, depth - 1));
+		if ((closest_obj.rgb.r = closest_obj.rgb.r * (1 - closest_obj.reflective) + reflected.r * closest_obj.reflective) > 255.0)
+			closest_obj.rgb.r = 255.0;
+		if ((closest_obj.rgb.g = closest_obj.rgb.g * (1 - closest_obj.reflective) + reflected.g * closest_obj.reflective) > 255.0)
+			closest_obj.rgb.g = 255.0;
+		if ((closest_obj.rgb.b = closest_obj.rgb.b * (1 - closest_obj.reflective) + reflected.b * closest_obj.reflective) > 255.0)
+			closest_obj.rgb.b = 255.0;
+		return (rgb_to_color(closest_obj.rgb));
+	}
+	return(0x000000);
+}
+
+int cast_ray(t_cl_scene *cl_scene, double3 start, double3 dir, int depth)
+{
+	t_cl_obj closest_obj;
+	t_cl_obj *ptr;
+	double closest_t = 99999.0;
+	double intensity;
+	double spec_intensity = 0.0;
+	ptr = get_closest_object(&closest_t, start, dir, cl_scene);
+
+	if (ptr)
+	{
+		closest_obj = *ptr;
+
+		double3 P = start + dir * closest_t;
+
+		double3 N = get_normal(P, closest_obj);
+
+		intensity = compute_lighting(P, N, -dir, closest_obj.specular, cl_scene, &spec_intensity);
+
+		if ((closest_obj.rgb.r *= intensity) >= 255.0)
+			closest_obj.rgb.r = 255.0;
+		if ((closest_obj.rgb.g *= intensity) >= 255.0)
+			closest_obj.rgb.g = 255.0;
+		if ((closest_obj.rgb.b *= intensity) >= 255.0)
+			closest_obj.rgb.b = 255.0;
+
+		if ((closest_obj.rgb.r += 255.0 * spec_intensity) >= 255.0)
+			closest_obj.rgb.r = 255.0;
+		if ((closest_obj.rgb.g += 255.0 * spec_intensity) >= 255.0)
+			closest_obj.rgb.g = 255.0;
+		if ((closest_obj.rgb.b += 255.0 * spec_intensity) >= 255.0)
+			closest_obj.rgb.b = 255.0;
+
+		if (depth <= 0 || closest_obj.reflective <= 0)
+			return (rgb_to_color(closest_obj.rgb));
+
+		double3 R = reflect_ray((-1.0) * dir, N);
+
+		t_rgb reflected = color_to_rgb(reflect1(cl_scene, P, R, depth - 1));
+		if ((closest_obj.rgb.r = closest_obj.rgb.r * (1 - closest_obj.reflective) + reflected.r * closest_obj.reflective) > 255.0)
+			closest_obj.rgb.r = 255.0;
+		if ((closest_obj.rgb.g = closest_obj.rgb.g * (1 - closest_obj.reflective) + reflected.g * closest_obj.reflective) > 255.0)
+			closest_obj.rgb.g = 255.0;
+		if ((closest_obj.rgb.b = closest_obj.rgb.b * (1 - closest_obj.reflective) + reflected.b * closest_obj.reflective) > 255.0)
+			closest_obj.rgb.b = 255.0;
+		return (rgb_to_color(closest_obj.rgb));
+	}
+	return(0x000000);
+}
 
 
 __kernel void mishania(__global char *image_data, __global t_scene *scene)
@@ -590,6 +710,8 @@ __kernel void mishania(__global char *image_data, __global t_scene *scene)
 
 	ptr = scene->camera.center;
 	cl_scene.camera.center = vector_to_double3(ptr);
+	ptr = scene->camera.dir;
+	cl_scene.camera.dir = vector_to_double3(ptr);
 
 	cl_scene.c_lights = scene->c_lights;
 	cl_scene.c_objs = scene->c_objs;
@@ -621,11 +743,7 @@ __kernel void mishania(__global char *image_data, __global t_scene *scene)
 
 	pixel_pos_3d = get_pixel_pisition(x - CW / 2, -y + CH / 2);
 	pixel_pos_3d = rotate_view(pixel_pos_3d, alpha, beta);
-	char flag = 0;
-	if (x == 320 && y == 700)
-		flag = 1;
-	put_point_to_image(image_data, x, y, cast_ray(&cl_scene, cl_scene.camera.center, pixel_pos_3d, flag));
 
+	put_point_to_image(image_data, x, y, cast_ray(&cl_scene, cl_scene.camera.center, pixel_pos_3d, DEPTH));
 
-	//double3 camera = (double3)(scene->camera.center.x, scene->camera.center.y, scene->camera.center.z);//а это работает
 }

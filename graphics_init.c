@@ -6,7 +6,7 @@
 /*   By: chorange <chorange@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/03/21 14:11:17 by chorange          #+#    #+#             */
-/*   Updated: 2019/03/21 15:45:57 by chorange         ###   ########.fr       */
+/*   Updated: 2019/04/10 20:33:35 by chorange         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ void compile_from_file(char *file_name, t_RTv1 *RTv1)
     }
     source_str = (char *)malloc(MAX_SOURCE_SIZE);
     source_str[read(fd, source_str, MAX_SOURCE_SIZE)] = 0;
-    source_size = strlen(source_str);
+    source_size = ft_strlen(source_str);
     close(fd);
 
     RTv1->program = clCreateProgramWithSource(RTv1->context, 1, (const char **)&source_str, (const size_t *)&source_size, &RTv1->ret);

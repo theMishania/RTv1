@@ -6,7 +6,7 @@
 /*   By: chorange <chorange@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/03/25 12:38:21 by cocummin          #+#    #+#             */
-/*   Updated: 2019/04/10 10:17:30 by chorange         ###   ########.fr       */
+/*   Updated: 2019/04/10 21:37:24 by chorange         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,12 +35,11 @@ int mouse_pressed(int button, int x, int y, void *param)
 {
 	t_RTv1 *RTv1;
 	t_vector pixel_pos_3d;
-	double trash = 99999.0;
 	static t_obj *ptr = NULL;
 	RTv1 = (t_RTv1 *)param;
     RTv1->prev_x = x;
     RTv1->prev_y = y;
-
+    RTv1->selected_t = 9999999.9;
     if (y < 0)
         return (0);
 
@@ -49,7 +48,7 @@ int mouse_pressed(int button, int x, int y, void *param)
         RTv1->left_mouse_pressed = 1;
 		pixel_pos_3d = get_pixel_pisition(x - CW / 2, -y + CH / 2);
         pixel_pos_3d = rotate_view(pixel_pos_3d, RTv1->scene.view_alpha, RTv1->scene.view_beta);
-		ptr = get_closest_object(&trash, RTv1->scene.camera.center, pixel_pos_3d, &(RTv1->scene));
+		ptr = get_closest_object(&(RTv1->selected_t), RTv1->scene.camera.center, pixel_pos_3d, &(RTv1->scene));
 		if (ptr)
 			RTv1->selected = ptr;
         else
@@ -94,17 +93,20 @@ int mouse_move(int x, int y, void *param)
     {
         dx = x - RTv1->prev_x;
         dy = y - RTv1->prev_y;
-        RTv1->scene.view_alpha += atan((double)dy * 0.001 / (double)(VW));
-        RTv1->scene.view_beta += atan((double)dx * 0.001 / (double)(VW));
+        RTv1->scene.view_alpha += atan((double)dy * 0.001);
+        RTv1->scene.view_beta += atan((double)dx * 0.001);
     }
     else if (RTv1->left_mouse_pressed)
     {
         dx = x - RTv1->prev_x;
         dy = y - RTv1->prev_y;
         if (!(RTv1->selected))
+        {
             RTv1->selected = &(RTv1->scene.objs[0]);
-        RTv1->selected->center.x += 0.005 * dx;
-        RTv1->selected->center.y -= 0.005 * dy;
+            RTv1->selected_t = 1.0;
+        }
+        RTv1->selected->center.x += 0.001 *  dx * RTv1->selected_t;
+        RTv1->selected->center.y -= 0.001 * dy * RTv1->selected_t;
     }
     RTv1->prev_x = x;
     RTv1->prev_y = y;

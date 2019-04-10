@@ -7,7 +7,7 @@
 # include "minilibx/mlx.h"
 # include "libft/libft.h"
 
-#define MAX_SOURCE_SIZE 20000
+#define MAX_SOURCE_SIZE 40000
 #define CW 1000
 #define CH 1000
 #define VW 1
@@ -81,6 +81,7 @@ typedef struct s_light
 typedef struct s_camera
 {
 	t_vector center;
+	t_vector dir;
 }		t_camera;
 
 
@@ -103,6 +104,7 @@ typedef struct s_RTv1
 	void *image;
 	char *image_data;
 	t_obj *selected;
+	double selected_t;
 	int left_mouse_pressed;
 	int right_mouse_pressed;
 	int prev_x;

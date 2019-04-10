@@ -2,7 +2,7 @@
 
 void reading_error(void)
 {
-	puts("error");
+	ft_putendl("error");
 	exit(-2);
 }
 /*
@@ -34,9 +34,9 @@ t_vector read_vector(char *str)
 	while (*str == ' ' || *str == '\t' || *str == '(')
 		str++;
 	ret.x = ft_atof(str);
-	str = strchr(str, ',') + 1;
+	str = ft_strchr(str, ',') + 1;
 	ret.y = ft_atof(str);
-	str = strchr(str, ',') + 1;
+	str = ft_strchr(str, ',') + 1;
 	ret.z = ft_atof(str);
 
 	return (ret);
@@ -44,13 +44,13 @@ t_vector read_vector(char *str)
 
 void set_obj_type(char *line, t_obj *obj)
 {
-	if (strstr(line, "sphere"))
+	if (ft_strstr(line, "sphere"))
 		obj->type = sphere;
-	else if (strstr(line, "cylinder"))
+	else if (ft_strstr(line, "cylinder"))
 		obj->type = cylinder;
-	else if (strstr(line, "cone"))
+	else if (ft_strstr(line, "cone"))
 		obj->type = cone;
-	else if (strstr(line, "plane"))
+	else if (ft_strstr(line, "plane"))
 		obj->type = plane;
 	else
 		reading_error();
@@ -58,11 +58,11 @@ void set_obj_type(char *line, t_obj *obj)
 
 void set_light_type(char *line, t_light *light)
 {
-	if (strstr(line, "point"))
+	if (ft_strstr(line, "point"))
 		light->type = point;
-	else if (strstr(line, "directional"))
+	else if (ft_strstr(line, "directional"))
 		light->type = directional;
-	else if (strstr(line, "ambient"))
+	else if (ft_strstr(line, "ambient"))
 		light->type = ambient;
 	else
 		reading_error();
@@ -70,53 +70,55 @@ void set_light_type(char *line, t_light *light)
 
 t_obj *read_obj_parameters(char *line, t_obj **obj)
 {
-	if (strchr(line, '}'))
+	if (ft_strchr(line, '}'))
 		return (NULL);
-	else if (strstr(line, "type"))
+	else if (ft_strstr(line, "type"))
 		set_obj_type(line, *obj);
-	else if (strstr(line, "position"))
-		(*obj)->center = read_vector(strchr(line, '=') + 1);
-	else if (strstr(line, "radius"))
-		(*obj)->radius = ft_atof(strchr(line, '=') + 1);
-	else if (strstr(line, "color"))
-		(*obj)->rgb = color_to_rgb(atoi(strchr(line, '=') + 1));
-	else if (strstr(line, "angle"))
+	else if (ft_strstr(line, "position"))
+		(*obj)->center = read_vector(ft_strchr(line, '=') + 1);
+	else if (ft_strstr(line, "radius"))
+		(*obj)->radius = ft_atof(ft_strchr(line, '=') + 1);
+	else if (ft_strstr(line, "color"))
+		(*obj)->rgb = color_to_rgb(atoi(ft_strchr(line, '=') + 1));
+	else if (ft_strstr(line, "angle"))
 		(*obj)->angle = ft_atof(strchr(line, '=') + 1);
-	else if (strstr(line, "direction"))
-		(*obj)->dir = vector_normalize(read_vector(strchr(line, '=') + 1));
-	else if (strstr(line, "specular"))
-		(*obj)->specular = ft_atof(strchr(line, '=') + 1);
-	else if (strstr(line, "reflective"))
-		(*obj)->reflective = ft_atof(strchr(line, '=') + 1);
+	else if (ft_strstr(line, "direction"))
+		(*obj)->dir = vector_normalize(read_vector(ft_strchr(line, '=') + 1));
+	else if (ft_strstr(line, "specular"))
+		(*obj)->specular = ft_atof(ft_strchr(line, '=') + 1);
+	else if (ft_strstr(line, "reflective"))
+		(*obj)->reflective = ft_atof(ft_strchr(line, '=') + 1);
 	return (*obj);
 }
 
 t_light *read_light_parameters(char *line, t_light **light)
 {
-	if (strchr(line, '}'))
+	if (ft_strchr(line, '}'))
 		return (NULL);
-	else if (strstr(line, "type"))
+	else if (ft_strstr(line, "type"))
 		set_light_type(line, *light);
-	else if (strstr(line, "position"))
-		(*light)->center = read_vector(strchr(line, '=') + 1);
+	else if (ft_strstr(line, "position"))
+		(*light)->center = read_vector(ft_strchr(line, '=') + 1);
 
-	else if (strstr(line, "direction"))
-		(*light)->dir = vector_normalize(read_vector(strchr(line, '=') + 1));
+	else if (ft_strstr(line, "direction"))
+		(*light)->dir = vector_normalize(read_vector(ft_strchr(line, '=') + 1));
 
-	else if (strstr(line, "intensity"))
-		(*light)->intensity = ft_atof(strchr(line, '=') + 1);
+	else if (ft_strstr(line, "intensity"))
+		(*light)->intensity = ft_atof(ft_strchr(line, '=') + 1);
 	return (*light);
 }
 
 t_camera *camera_init(char *line, t_camera *camera)
 {
-	if (strchr(line, '}'))
+	if (ft_strchr(line, '}'))
 	{
 	//	puts("camera inited");
 		return (NULL);
 	}
-	else if (strstr(line, "position"))
-		camera->center = read_vector(strchr(line, '=') + 1);
+	else if (ft_strstr(line, "position"))
+		camera->center = read_vector(ft_strchr(line, '=') + 1);
+	else if (ft_strstr(line, "direction"))
+		camera->dir = vector_normalize(read_vector(ft_strchr(line, '=') + 1));
 	return (camera);
 }
 
@@ -127,7 +129,7 @@ void read_line_set_scene(char *line, t_scene *scene)
 	static t_obj *obj = NULL;
 	static t_light *light = NULL;
 	static t_camera *camera = NULL;
-	if (strstr(line, "camera_init"))
+	if (ft_strstr(line, "camera_init"))
 		camera = camera_init(line, &(scene->camera));
 
 
@@ -146,21 +148,21 @@ void read_line_set_scene(char *line, t_scene *scene)
 		camera = camera_init(line, camera);
 	}
 
-	else if (strstr(line, "new"))
+	else if (ft_strstr(line, "new"))
 	{
-		if (strstr(line, "object"))
+		if (ft_strstr(line, "object"))
 		{
 			i++;
 			obj = &(scene->objs[i]);
 		}
 
-		else if (strstr(line, "light"))
+		else if (ft_strstr(line, "light"))
 		{
 			j++;
 			light = &(scene->lights[j]);
 		}
 	}
-	else if (!strcmp(line, "end"))
+	else if (!ft_strcmp(line, "end"))
 	{
 		scene->c_objs = i + 1;
 		scene->c_lights = j + 1;
