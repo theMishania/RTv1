@@ -10,7 +10,7 @@ new object
 	radius = 1.0
 	color = 16711680
 	specular = 500.0
-	reflective = 0.1
+	reflective = 0.0
 }
 
 new object

@@ -2,8 +2,7 @@
 #define CH 1000
 #define VW 1
 #define VH 1
-#define DEPTH 5
-
+#define DEPTH 0
 #define UPPER_BOUND 99999.9
 
 
@@ -398,7 +397,7 @@ double3 reflect_ray(double3 R, double3 N)
 	return (N * (2 * dot(N, R)) - R);
 }
 
-double compute_lighting(double3 P, double3 N, double3 V, double s, t_cl_scene *cl_scene)
+double compute_lighting(double3 P, double3 N, double3 V, double s, t_cl_scene *cl_scene, double *spec_intensity)
 {
 	double intensity = 0.0;
 
@@ -443,7 +442,7 @@ double compute_lighting(double3 P, double3 N, double3 V, double s, t_cl_scene *c
 				double3 R = reflect_ray(L, N);
 				double r_dot_v = dot(R, V);
 				if (r_dot_v > 0.0)
-					intensity += cl_scene->lights[i].intensity * pow(r_dot_v / (/*sqrt(dot(R, R))*/length(R) * /*sqrt(dot(V, V))*/length(V)), s);
+					*spec_intensity += cl_scene->lights[i].intensity * pow(r_dot_v / (length(R) * length(V)), s);
 			}
 		}
 	}
@@ -536,7 +535,8 @@ int cast_ray(t_cl_scene *cl_scene, double3 start, double3 dir, char flag)
 	while (i >= 0)
 	{
 		dir = reflect_ray(-dir, N);
-		intensity = compute_lighting(start, N, -dir, ptr->specular, cl_scene);
+		double spec_intensity = 0.0;
+		intensity = compute_lighting(start, N, -dir, ptr->specular, cl_scene, &spec_intensity);
 
 		if ((ptr->rgb.r *= intensity) >= 255.0)
 			ptr->rgb.r = 255.0;
@@ -552,9 +552,17 @@ int cast_ray(t_cl_scene *cl_scene, double3 start, double3 dir, char flag)
 		if ((rgb.b = ptr->rgb.b * (1 - ptr->reflective) + rgb.b * ptr->reflective) > 255.0)
 			rgb.b = 255.0;
 
+		if ((rgb.r += 255.0 * spec_intensity) >= 255.0)
+			rgb.r = 255.0;
+		if ((rgb.g += 255.0 * spec_intensity) >= 255.0)
+			rgb.g = 255.0;
+		if ((rgb.b += 255.0 * spec_intensity) >= 255.0)
+			rgb.b = 255.0;
+
+
 		if (i != 0)
 		{
-			closest_t = 99999.0;
+			closest_t = UPPER_BOUND;
 			ptr = get_closest_object(&closest_t, start, dir, cl_scene);
 			start = start + dir * closest_t;
 			N = get_normal(start, *ptr);

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <math.h>
+#include "RTv1.h"
 
 int strlen_while_dig(char *str)
 {
@@ -12,7 +13,7 @@ int strlen_while_dig(char *str)
 	len = 0;
 	while (str)
 	{
-		if (!isdigit(*str))
+		if (!ft_isdigit(*str))
 			break ;
 		str++;
 		len++;
@@ -31,12 +32,14 @@ double ft_atof(char *str)
 		str++;
 	neg = (*str == '-' ? 1 : 0);
 	ret = 0.0;
-	ret = (double)atoi(str);
+	ret = (double)ft_atoi(str);
 	
-	str = strchr(str, '.') + 1;
-	if (isdigit(*str))
+	if (!ft_strchr(str, '.'))
+		return (ret);
+	str = ft_strchr(str, '.') + 1;
+	if (ft_isdigit(*str))
 	{
-		mod = (double)atoi(str);
+		mod = (double)ft_atoi(str);
 		mod /= pow(10, strlen_while_dig(str));
 		
 		ret += (neg ? -mod : mod);

@@ -6,7 +6,7 @@
 /*   By: chorange <chorange@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/03/25 12:38:21 by cocummin          #+#    #+#             */
-/*   Updated: 2019/04/09 20:39:02 by chorange         ###   ########.fr       */
+/*   Updated: 2019/04/10 10:17:30 by chorange         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,9 @@ int mouse_pressed(int button, int x, int y, void *param)
 	RTv1 = (t_RTv1 *)param;
     RTv1->prev_x = x;
     RTv1->prev_y = y;
+
+    if (y < 0)
+        return (0);
 
 	if (button == 1)
 	{
