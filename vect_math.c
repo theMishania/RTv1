@@ -47,6 +47,14 @@ double scal_mult(t_vector a, t_vector b)
 	return (c);
 }
 
+double vector_length(t_vector a) 
+{
+	double result;
+
+	result = sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+	return (result);
+}
+
 void obj_init(t_obj *obj)
 {
 	obj->center.x = 0.0;

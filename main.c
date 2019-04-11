@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chorange <chorange@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mishania <mishania@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/03/20 19:25:19 by cocummin          #+#    #+#             */
-/*   Updated: 2019/04/09 20:37:07 by chorange         ###   ########.fr       */
+/*   Updated: 2019/04/11 19:11:23 by mishania         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -222,6 +222,7 @@ int main(int ac, char **av)
 	// RTv1.right_mouse_pressed = 0;
 	// RTv1.prev_x = 0;
 	// RTv1.prev_y = 0;
+	set_start_angles(&(RTv1.scene));
     provider(&RTv1);
 
 	mlx_hook(RTv1.win_ptr, 2, 4, key_pressed, &RTv1);

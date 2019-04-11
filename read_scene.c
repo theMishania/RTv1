@@ -118,7 +118,7 @@ t_camera *camera_init(char *line, t_camera *camera)
 	else if (ft_strstr(line, "position"))
 		camera->center = read_vector(ft_strchr(line, '=') + 1);
 	else if (ft_strstr(line, "direction"))
-		camera->dir = vector_normalize(read_vector(ft_strchr(line, '=') + 1));
+		camera->dir = read_vector(ft_strchr(line, '=') + 1);
 	return (camera);
 }
 

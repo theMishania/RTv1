@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: chorange <chorange@student.42.fr>          +#+  +:+       +#+         #
+#    By: mishania <mishania@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2019/02/18 18:53:25 by chorange          #+#    #+#              #
-#    Updated: 2019/04/09 20:32:48 by chorange         ###   ########.fr        #
+#    Updated: 2019/04/11 18:31:35 by mishania         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@ NAME = RTv1
 
 FLAGS = #-fsanitize=address  #-Wextra -Wall -Werror
 
-OBJECTS = main.o graphics_init.o vect_math.o color.o read_scene.o atof.o get_next_line.o key_utils.o draw_guide.o
+OBJECTS = main.o graphics_init.o vect_math.o color.o read_scene.o atof.o get_next_line.o key_utils.o draw_guide.o camera_dir_setup.o
 
 LIBS = -L./minilibx -lmlx -L./libft -lft -lm -framework OpenGL -framework AppKit -framework OpenCL
 

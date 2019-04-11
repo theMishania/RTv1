@@ -148,6 +148,7 @@ t_vector vector_sum(t_vector a, t_vector b);
 t_vector vector_int_mult(t_vector a, double b);
 t_vector vector_int_div(t_vector a, double b);
 double scal_mult(t_vector a, t_vector b);
+double vector_length(t_vector a);
 //void obj_init(t_obj *obj);
 t_vector vector_init(double x, double y, double z);
 
@@ -165,6 +166,8 @@ t_obj *get_closest_object(double *closest_t, t_vector start, t_vector dir, t_sce
 
 
 void graphics_init(t_RTv1 *RTv1);
+
+void    set_start_angles(t_scene *scene);
 
 
 
