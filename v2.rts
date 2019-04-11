@@ -1,6 +1,7 @@
 camera_init
 {
 	position = (0.0, 0.0, -0.0)
+	direction = (0.0, 0.0, 1.0)
 }
 
 
