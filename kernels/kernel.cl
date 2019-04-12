@@ -79,6 +79,7 @@ typedef struct s_scene
 	t_camera camera;
 	t_light lights[100];
 	t_obj objs[100];
+	int shadows_on;
 }		t_scene;
 
 typedef struct s_cl_obj
@@ -117,6 +118,7 @@ typedef struct s_cl_scene
 	t_cl_camera camera;
 	t_cl_light lights[100];
 	t_cl_obj objs[100];
+	int shadows_on;
 }		t_cl_scene;
 
 t_rgb color_to_rgb(int color)
@@ -376,20 +378,21 @@ double compute_lighting(double3 P, double3 N, double3 V, double s, t_cl_scene *c
 				L = cl_scene->lights[i].center - P;
 			else
 				L = cl_scene->lights[i].dir;
-
-			while (j < cl_scene->c_objs)
+			if (cl_scene->shadows_on == 1)
 			{
-				t = ray_intersect_obj(P, L, &(cl_scene->objs[j]));
-				if (t > 0.0001 && ((cl_scene->lights[i].type == point && length(L) > length(L * t)) || (cl_scene->lights[i].type != point)))
+				while (j < cl_scene->c_objs)
 				{
-					shadow_t = t;
-					shadow_obj = &(cl_scene->objs[j]);
+					t = ray_intersect_obj(P, L, &(cl_scene->objs[j]));
+					if (t > 0.0001 && ((cl_scene->lights[i].type == point && length(L) > length(L * t)) || (cl_scene->lights[i].type != point)))
+					{
+						shadow_t = t;
+						shadow_obj = &(cl_scene->objs[j]);
+					}
+					j++;
 				}
-				j++;
+				if (shadow_obj)
+					continue ;
 			}
-			if (shadow_obj)
-				continue ;
-
 			double n_dot_l = dot(N, L);
 			if (n_dot_l > 0.0)
 				intensity += cl_scene->lights[i].intensity * n_dot_l / (/*1.0/*length(N) */ length(L));
@@ -715,6 +718,8 @@ __kernel void mishania(__global char *image_data, __global t_scene *scene)
 
 	cl_scene.c_lights = scene->c_lights;
 	cl_scene.c_objs = scene->c_objs;
+
+	cl_scene.shadows_on = scene->shadows_on;
 
 	while (i < scene->c_objs)
 	{

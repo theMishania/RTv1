@@ -1,14 +1,20 @@
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <math.h>
-#include "RTv1.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   atof.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: chorange <chorange@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/04/12 10:53:43 by chorange          #+#    #+#             */
+/*   Updated: 2019/04/12 11:15:42 by chorange         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-int strlen_while_dig(char *str)
+#include "rtv1.h"
+
+static int		strlen_while_dig(char *str)
 {
 	int len;
-	char stop;
 
 	len = 0;
 	while (str)
@@ -18,14 +24,14 @@ int strlen_while_dig(char *str)
 		str++;
 		len++;
 	}
-	return len;
+	return (len);
 }
 
-double ft_atof(char *str)
+double			ft_atof(char *str)
 {
-	double ret;
-	double mod;
-	int	neg;
+	double	ret;
+	double	mod;
+	int		neg;
 
 	while ((*str == '\n') || (*str == '\t') || (*str == '\v') ||
 			(*str == ' ') || (*str == '\f') || (*str == '\r'))
@@ -33,7 +39,6 @@ double ft_atof(char *str)
 	neg = (*str == '-' ? 1 : 0);
 	ret = 0.0;
 	ret = (double)ft_atoi(str);
-	
 	if (!ft_strchr(str, '.'))
 		return (ret);
 	str = ft_strchr(str, '.') + 1;
@@ -41,9 +46,7 @@ double ft_atof(char *str)
 	{
 		mod = (double)ft_atoi(str);
 		mod /= pow(10, strlen_while_dig(str));
-		
 		ret += (neg ? -mod : mod);
 	}
-	//printf("ret\t%f\n", ret);
 	return (ret);
 }
